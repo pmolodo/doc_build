@@ -20,6 +20,15 @@ if sys.version_info < (3, 10):
     sys.exit("Python 3.10 or greater is required.")
 
 
+if sys.platform == "win32":
+    from subprocess import list2cmdline as _to_shell_cmd_base
+else:
+    from shlex import join as _to_shell_cmd_base
+
+def to_shell_cmd(command):
+    return _to_shell_cmd_base([str(x) for x in command])
+
+
 class Logger:
 
     def __log(self, msg, *args, **kwargs):
@@ -45,6 +54,7 @@ class ExecCommand:
 
     def __run(self, arguments, stderr_processor=None, *args, **kwargs):
         command = [self.binary] + arguments
+        print(f"Running command: {to_shell_cmd(command)}")
         if stderr_processor:
 
             process = subprocess.Popen(
@@ -71,6 +81,7 @@ class ExecCommand:
 
     def get_output(self, arguments, *args, **kwargs):
         command = [self.binary] + arguments
+        print(f"Running command: {to_shell_cmd(command)}")
 
         return subprocess.check_output(command, *args, **kwargs).decode("utf-8")
 
@@ -220,6 +231,10 @@ class DocBuilder:
             docx = args.output / f"{filename}.docx"
             log(f"\tBuilding DocX to {docx}...")
             pandoc(shared_command + ["-o", docx, "-F", self.get_filter("convert_svg")])
+
+        if args.pandoc_ast_json:
+            log(f"\tBuilding Pandoc AST JSON to {args.output}...")
+            pandoc(shared_command + ["-t", "json", "-o", args.output / "pandoc_ast.json"])
 
         return pdf, docx, html
 
@@ -577,6 +592,9 @@ class DocBuilder:
         )
         build_parser.add_argument(
             "--no-docx", help="Do not build docx", action="store_true"
+        )
+        build_parser.add_argument(
+            "--pandoc-ast-json", help="Build Pandoc AST JSON output files (for diffing)", action="store_true"
         )
         build_parser.add_argument(
             "--clean", help="Clean before building", action="store_true"

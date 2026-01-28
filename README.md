@@ -89,6 +89,7 @@ The following subcommands are available:
     * `--no-html`: Turns of html generation
     * `--no-docx`: Turns off docx generation
     * `--no-pdf`: Turns off pdf generation
+    * `--pandoc-ast-json`: Turns on Pandoc AST json generation (for diffs)
     * `--clean`: Runs the cleanup subcommand before running
     * `--only`/`--exclude`: Limits which sections get inlined during processing
     * `--no-draft`: Turns off the draft waterman on the PDF
